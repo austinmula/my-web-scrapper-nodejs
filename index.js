@@ -10,22 +10,24 @@ app.use('/api/jobs', require('./routes/jobListingRoute'));
 
 // picks the scrapped data from the csv file and adds to mysql db
 function UploadCsvDataToMySQL() {
-    let stream = fs.createReadStream(fileName);
-    let csvData = [];
-    let csvStream = csv
-        .parse()
-        .on("data", function (data) {
-            csvData.push(data);
-        })
-        .on("end", function () {
-            let query = 'INSERT INTO job_listings (title, company, location) VALUES ?';
-            connection.query(query, [csvData], (error, response) => {
-                console.log(error || response);
+    if (fileName) {
+        let stream = fs.createReadStream(fileName);
+        let csvData = [];
+        let csvStream = csv
+            .parse()
+            .on("data", function (data) {
+                csvData.push(data);
+            })
+            .on("end", function () {
+                let query = 'INSERT INTO job_listings_det (title, company, location, posted_at, meta) VALUES ?';
+                connection.query(query, [csvData], (error, response) => {
+                    console.log(error || response);
+                });
+                // delete csv when done
+                fs.unlinkSync(fileName)
             });
-            // delete csv when done
-            fs.unlinkSync(fileName)
-        });
-    stream.pipe(csvStream);
+        stream.pipe(csvStream);
+    }
 }
 // UploadCsvDataToMySQL()
 
