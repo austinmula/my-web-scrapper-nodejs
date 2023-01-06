@@ -16,7 +16,7 @@ const fs = require("fs");
     const page = await browser.newPage();
     // "https://www.indeed.com/jobs?q=developer&l=&vjk=e81d40560acf4695"
     await page.goto(
-        "https://www.indeed.com/jobs?q=developer&from=mobRdr&l=&utm_source=%2Fm%2F&utm_medium=redir&utm_campaign=dt&vjk=2dd51799c019b82d"
+        "https://www.indeed.com/jobs?q=remote+%24145%2C000&sc=0kf%3Aattr%28FCGTU%7CHFDVW%7CQJZM9%7CUTPWG%252COR%29explvl%28ENTRY_LEVEL%29%3B&fromage=3&vjk=85cc803206efc5cb"
     );
 
     // #jobsearch-JapanPage > div > div > div.jobsearch-SerpMainContent > div.jobsearch-LeftPane > nav > div > a
@@ -32,6 +32,8 @@ const fs = require("fs");
             let job_title = "Null";
             let company_location = "Null";
             let company_name = "Null";
+            let posted_date = "Null"
+            let job_meta = "Null"
 
             try {
                 job_title = await page.evaluate(
@@ -53,11 +55,27 @@ const fs = require("fs");
                     job
                 );
             } catch (error) { }
+            try {
+                posted_date = await page.evaluate(
+                    (el) => el.querySelector("table.jobCardShelfContainer.big6_visualChanges > tbody > tr.underShelfFooter > td > div > span").textContent,
+                    job
+                );
+            } catch (error) { }
+            try {
+                job_meta = await page.evaluate(
+                    (el) => el.querySelector(".metadata .attribute_snippet").textContent,
+                    job
+                );
+            } catch (error) { }
+
+            //   .metadata .attribute_snippet
+
+            // table.jobCardShelfContainer.big6_visualChanges > tbody > tr.underShelfFooter > td > div > span
 
             if (job_title !== "Null") {
                 fs.appendFile(
                     "results.csv",
-                    `${job_title.replace(/,/g, ".")},${company_name},${company_location}\n`,
+                    `${job_title.replace(/,/g, ".")},${company_name.replace(/,/g, "-")},${company_location.replace(/,/g, ".")},${posted_date.replace(/,/g, ".")},${job_meta.replace(/,/g, ".")}\n`,
                     function (err) {
                         if (err) throw err;
                     }
